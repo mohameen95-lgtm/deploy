@@ -1,0 +1,228 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email == 'moh.ameen95@gmail.com' && request.auth.token.email_verified == true)
+      );
+    }
+
+    // 3. Entity Validation Blueprints
+    function isValidProduct(data) {
+      return data.keys().hasAll([
+        'name', 'subtitle', 'category', 'concentration', 'origin',
+        'priceInr', 'stock', 'topNotes', 'heartNotes', 'baseNotes',
+        'description', 'bottleStyle', 'isPublished', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'name', 'subtitle', 'category', 'concentration', 'origin',
+        'priceInr', 'stock', 'topNotes', 'heartNotes', 'baseNotes',
+        'description', 'bottleStyle', 'isPublished', 'createdAt', 'updatedAt'
+      ]) &&
+      data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+      data.subtitle is string && data.subtitle.size() >= 1 && data.subtitle.size() <= 160 &&
+      data.category is string && data.category.size() <= 40 &&
+      (data.category == 'Azhar' || data.category == 'Artisanal Attar' || data.category == 'Eau de Parfum' || data.category == 'Extrait de Parfum' || data.category == 'Oud & Bakhoor' || data.category == 'Trending' || data.category == 'New Arrival') &&
+      data.concentration is string && data.concentration.size() >= 1 && data.concentration.size() <= 60 &&
+      data.origin is string && data.origin.size() >= 1 && data.origin.size() <= 80 &&
+      data.priceInr is number && data.priceInr >= 100 && data.priceInr <= 500000 &&
+      data.stock is number && data.stock >= 0 && data.stock <= 10000 &&
+      data.topNotes is string && data.topNotes.size() >= 1 && data.topNotes.size() <= 200 &&
+      data.heartNotes is string && data.heartNotes.size() >= 1 && data.heartNotes.size() <= 200 &&
+      data.baseNotes is string && data.baseNotes.size() >= 1 && data.baseNotes.size() <= 200 &&
+      data.description is string && data.description.size() >= 1 && data.description.size() <= 1000 &&
+      data.bottleStyle is string && data.bottleStyle.size() <= 40 &&
+      (data.bottleStyle == 'crystal-attar' || data.bottleStyle == 'amber-flacon' || data.bottleStyle == 'rose-elixir' || data.bottleStyle == 'sandal-decanter' || data.bottleStyle == 'oud-monolith' || data.bottleStyle == 'saffron-amphora') &&
+      data.isPublished is bool &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'wishlistIds', 'createdAt', 'updatedAt']) &&
+      data.keys().hasOnly(['uid', 'displayName', 'wishlistIds', 'createdAt', 'updatedAt']) &&
+      data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.uid == request.auth.uid &&
+      data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100 &&
+      data.wishlistIds is list && data.wishlistIds.size() <= 50 &&
+      (data.wishlistIds.size() == 0 || (data.wishlistIds[0] is string && data.wishlistIds[0].size() <= 128)) &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidUserPrivateShipping(data) {
+      return data.keys().hasAll(['userId', 'email', 'phone', 'addressLine', 'city', 'state', 'pincode', 'updatedAt']) &&
+      data.keys().hasOnly(['userId', 'email', 'phone', 'addressLine', 'city', 'state', 'pincode', 'updatedAt']) &&
+      data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 && data.userId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.userId == request.auth.uid &&
+      data.email is string && data.email.size() >= 3 && data.email.size() <= 150 &&
+      data.phone is string && data.phone.size() >= 10 && data.phone.size() <= 20 &&
+      data.addressLine is string && data.addressLine.size() >= 3 && data.addressLine.size() <= 250 &&
+      data.city is string && data.city.size() >= 2 && data.city.size() <= 80 &&
+      data.state is string && data.state.size() >= 2 && data.state.size() <= 80 &&
+      data.pincode is string && data.pincode.size() >= 6 && data.pincode.size() <= 10 && data.pincode.matches('^[0-9]{6,10}$') &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll([
+        'orderNumber', 'userId', 'customerName', 'shippingCity', 'shippingAddressSummary',
+        'itemsSummary', 'itemCount', 'totalAmountInr', 'upiVpa', 'upiTxnRef',
+        'paymentMethod', 'status', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'orderNumber', 'userId', 'customerName', 'shippingCity', 'shippingAddressSummary',
+        'itemsSummary', 'itemCount', 'totalAmountInr', 'upiVpa', 'upiTxnRef',
+        'paymentMethod', 'status', 'createdAt', 'updatedAt'
+      ]) &&
+      data.orderNumber is string && data.orderNumber.size() >= 4 && data.orderNumber.size() <= 40 &&
+      data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 && data.userId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.customerName is string && data.customerName.size() >= 1 && data.customerName.size() <= 100 &&
+      data.shippingCity is string && data.shippingCity.size() >= 2 && data.shippingCity.size() <= 80 &&
+      data.shippingAddressSummary is string && data.shippingAddressSummary.size() >= 5 && data.shippingAddressSummary.size() <= 300 &&
+      data.itemsSummary is string && data.itemsSummary.size() >= 3 && data.itemsSummary.size() <= 500 &&
+      data.itemCount is number && data.itemCount >= 1 && data.itemCount <= 100 &&
+      data.totalAmountInr is number && data.totalAmountInr >= 100 && data.totalAmountInr <= 5000000 &&
+      data.upiVpa is string && data.upiVpa.size() >= 3 && data.upiVpa.size() <= 120 &&
+      data.upiTxnRef is string && data.upiTxnRef.size() >= 12 && data.upiTxnRef.size() <= 36 && data.upiTxnRef.matches('^[a-zA-Z0-9\\-]+$') &&
+      data.paymentMethod is string && data.paymentMethod.size() <= 20 &&
+      (data.paymentMethod == 'UPI_QR' || data.paymentMethod == 'UPI_ID') &&
+      data.status is string && data.status.size() <= 20 &&
+      (data.status == 'Confirmed' || data.status == 'Packed' || data.status == 'Shipped' || data.status == 'Delivered' || data.status == 'Cancelled') &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // 4. Collection Rules
+
+    // Catalog Products
+    match /products/{productId} {
+      allow get: if isValidId(productId) && (existing().isPublished == true || isAdmin());
+      allow list: if existing().isPublished == true || isAdmin();
+      allow create: if isVerifiedUser() && isValidId(productId) && isValidProduct(incoming()) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time && isAdmin();
+      allow update: if isVerifiedUser() && isValidId(productId) && isValidProduct(incoming()) && (
+        isAdmin() &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'subtitle', 'category', 'concentration', 'origin',
+          'priceInr', 'stock', 'topNotes', 'heartNotes', 'baseNotes',
+          'description', 'bottleStyle', 'isPublished', 'updatedAt'
+        ])
+      );
+      allow delete: if isVerifiedUser() && isValidId(productId) && isAdmin();
+    }
+
+    // Customer Profiles (Non-PII + Wishlist)
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if false;
+      allow create: if isVerifiedUser() && isValidId(userId) && isOwner(userId) &&
+        isValidUserProfile(incoming()) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() && isValidId(userId) && isValidUserProfile(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'wishlistIds', 'updatedAt']) &&
+        (isOwner(userId) || isAdmin());
+      allow delete: if isVerifiedUser() && isValidId(userId) && isAdmin();
+
+      // Isolated PII Subcollection (Master Gate checks parent user document)
+      match /private/{docId} {
+        allow get: if isSignedIn() && isValidId(userId) && isValidId(docId) &&
+          (isOwner(userId) || isAdmin()) &&
+          exists(/databases/$(database)/documents/users/$(userId));
+        allow list: if false;
+        allow create: if isVerifiedUser() && isValidId(userId) && isValidId(docId) &&
+          isOwner(userId) && isValidUserPrivateShipping(incoming()) &&
+          incoming().userId == userId &&
+          incoming().updatedAt == request.time &&
+          exists(/databases/$(database)/documents/users/$(userId));
+        allow update: if isVerifiedUser() && isValidId(userId) && isValidId(docId) &&
+          isValidUserPrivateShipping(incoming()) &&
+          incoming().userId == existing().userId &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'email', 'phone', 'addressLine', 'city', 'state', 'pincode', 'updatedAt'
+          ]) &&
+          (isOwner(userId) || isAdmin()) &&
+          exists(/databases/$(database)/documents/users/$(userId));
+        allow delete: if isVerifiedUser() && isValidId(userId) && isValidId(docId) &&
+          (isOwner(userId) || isAdmin()) &&
+          exists(/databases/$(database)/documents/users/$(userId));
+      }
+    }
+
+    // Customer Orders
+    match /orders/{orderId} {
+      allow get: if isSignedIn() && isValidId(orderId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow create: if isVerifiedUser() && isValidId(orderId) && isValidOrder(incoming()) &&
+        incoming().userId == request.auth.uid &&
+        incoming().status == 'Confirmed' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser() && isValidId(orderId) && isValidOrder(incoming()) && (
+        // Action 1: Customer cancels their own Confirmed order (Terminal state locked if Delivered/Cancelled)
+        (existing().userId == request.auth.uid &&
+          existing().status == 'Confirmed' &&
+          incoming().status == 'Cancelled' &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        ) ||
+        // Action 2: Admin updates order fulfillment status
+        (isAdmin() &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        )
+      );
+      allow delete: if isVerifiedUser() && isValidId(orderId) && isAdmin();
+    }
+
+    // Trusted Admin Directory
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && isValidId(adminId) && (isOwner(adminId) || isAdmin());
+      allow list: if false;
+      allow create, update, delete: if false;
+    }
+  }
+}

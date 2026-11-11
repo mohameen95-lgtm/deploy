@@ -1,0 +1,6 @@
+{
+  "name": "Azhar Perfumes — Artisanal Attars & Fine Fragrances",
+  "description": "Luxury fragrance house and artisanal attar boutique featuring traditional Kannauj hydro-distilled oils, Extrait de Parfums, secure UPI checkout, customer wishlist and order tracking, and an atelier admin console.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

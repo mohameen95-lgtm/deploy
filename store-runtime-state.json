@@ -1,0 +1,37 @@
+{
+  "settings": {
+    "storeName": "AZHAR PERFUMES",
+    "storeTagline": "ATTAR & PERFUME",
+    "storeLogoUrl": "./images/azhar-logo.png",
+    "storeAddress": "Azhar Perfumes, Tvs, Thiruchengode - Rasipuram Rd, Rasipuram, Tamil Nadu 637408",
+    "storePhone": "+91 95971 05217",
+    "storeEmail": "azharperfumes@gmail.com",
+    "whatsappNumber": "+919597105217",
+    "facebookUrl": "https://www.facebook.com/share/1HkBdATYMx/",
+    "instagramUrl": "https://www.instagram.com/azharperfumes28/",
+    "youtubeUrl": "https://youtube.com/@azharperfumes",
+    "announcementText": "Extra Discount On UPI | Get 3 Attars At ₹899/- No Code Needed",
+    "footerDescription": "India's premier house of 100% non-alcoholic luxury attars, Shanaya & White Oudh roll-ons, and long-lasting French-Arabic Eau de Parfums.",
+    "merchantUpiVpa": "9597105217@okbizaxis",
+    "merchantName": "Azhar Perfumes",
+    "merchantQrImageUrl": "./assets/aistudio/IMG-20261109-WA0033_2a6bf701.jpg",
+    "shippingChargeInr": 180,
+    "freeShippingThresholdInr": 3500,
+    "gstPercent": 18,
+    "gstMode": "included",
+    "whatsappNotifyEnabled": true,
+    "whatsappWebhookUrl": "",
+    "whatsappCloudPhoneId": "",
+    "whatsappCloudToken": "",
+    "adminPasscode": "azhar899"
+  },
+  "products": [],
+  "orders": [],
+  "updatedAt": 1762686000000,
+  "deletedProductIds": [
+    "azh-own-royal-signature",
+    "adilqadri-white-oudh",
+    "adilqadri-trio-gift-box",
+    "adilqadri-aq365-edp"
+  ]
+}

@@ -1,0 +1,344 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A fragrance or traditional attar product in the Azhar Perfumes catalog.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the perfume or attar",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Short olfactory descriptor",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "category": {
+          "type": "string",
+          "description": "Fragrance category classification",
+          "enum": ["Azhar", "Artisanal Attar", "Eau de Parfum", "Extrait de Parfum", "Oud & Bakhoor", "Trending", "New Arrival"]
+        },
+        "concentration": {
+          "type": "string",
+          "description": "Oil concentration level",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "origin": {
+          "type": "string",
+          "description": "Distillation or botanical origin",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "priceInr": {
+          "type": "number",
+          "description": "Base price in Indian Rupees (INR)"
+        },
+        "stock": {
+          "type": "number",
+          "description": "Available inventory count"
+        },
+        "topNotes": {
+          "type": "string",
+          "description": "Comma-separated top olfactory notes",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "heartNotes": {
+          "type": "string",
+          "description": "Comma-separated heart olfactory notes",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "baseNotes": {
+          "type": "string",
+          "description": "Comma-separated base olfactory notes",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed editorial story and distillation notes",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "bottleStyle": {
+          "type": "string",
+          "description": "Visual flacon style identifier",
+          "enum": ["crystal-attar", "amber-flacon", "rose-elixir", "sandal-decanter", "oud-monolith", "saffron-amphora"]
+        },
+        "isPublished": {
+          "type": "boolean",
+          "description": "Whether the product is visible in the public storefront"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp"
+        }
+      },
+      "required": [
+        "name",
+        "subtitle",
+        "category",
+        "concentration",
+        "origin",
+        "priceInr",
+        "stock",
+        "topNotes",
+        "heartNotes",
+        "baseNotes",
+        "description",
+        "bottleStyle",
+        "isPublished",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Customer profile containing non-PII display preferences and wishlist product IDs.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owner",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Customer display name",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "wishlistIds": {
+          "type": "array",
+          "description": "Bounded list of wishlisted product IDs (max 50)"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp"
+        }
+      },
+      "required": ["uid", "displayName", "wishlistIds", "createdAt", "updatedAt"]
+    },
+    "UserPrivateShipping": {
+      "title": "UserPrivateShipping",
+      "description": "Isolated PII subcollection document storing customer contact and shipping address.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owner",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Customer email address",
+          "minLength": 3,
+          "maxLength": 150
+        },
+        "phone": {
+          "type": "string",
+          "description": "Customer mobile number for delivery updates",
+          "minLength": 10,
+          "maxLength": 20
+        },
+        "addressLine": {
+          "type": "string",
+          "description": "Street address and landmark",
+          "minLength": 3,
+          "maxLength": 250
+        },
+        "city": {
+          "type": "string",
+          "description": "City or town name",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "state": {
+          "type": "string",
+          "description": "State or territory",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "pincode": {
+          "type": "string",
+          "description": "6-digit Indian Postal Index Number (PIN)",
+          "minLength": 6,
+          "maxLength": 10,
+          "pattern": "^[0-9]{6,10}$"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp"
+        }
+      },
+      "required": ["userId", "email", "phone", "addressLine", "city", "state", "pincode", "updatedAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer fragrance order with UPI payment verification and fulfillment state.",
+      "type": "object",
+      "properties": {
+        "orderNumber": {
+          "type": "string",
+          "description": "Human-readable order code (e.g. AZH-2026-8419)",
+          "minLength": 4,
+          "maxLength": 40
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the customer who placed the order",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Recipient name for parcel",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "shippingCity": {
+          "type": "string",
+          "description": "Destination city and PIN summary",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "shippingAddressSummary": {
+          "type": "string",
+          "description": "Formatted delivery destination",
+          "minLength": 5,
+          "maxLength": 300
+        },
+        "itemsSummary": {
+          "type": "string",
+          "description": "Human-readable summary of ordered bottles and sizes",
+          "minLength": 3,
+          "maxLength": 500
+        },
+        "itemCount": {
+          "type": "number",
+          "description": "Total number of bottles/flacons in order"
+        },
+        "totalAmountInr": {
+          "type": "number",
+          "description": "Total order value paid in INR"
+        },
+        "upiVpa": {
+          "type": "string",
+          "description": "Payer or merchant UPI Virtual Payment Address",
+          "minLength": 3,
+          "maxLength": 120
+        },
+        "upiTxnRef": {
+          "type": "string",
+          "description": "12-digit UPI UTR / Reference number",
+          "minLength": 12,
+          "maxLength": 36,
+          "pattern": "^[a-zA-Z0-9\\-]+$"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Selected UPI payment channel",
+          "enum": ["UPI_QR", "UPI_ID"]
+        },
+        "status": {
+          "type": "string",
+          "description": "Order fulfillment status",
+          "enum": ["Confirmed", "Packed", "Shipped", "Delivered", "Cancelled"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp"
+        }
+      },
+      "required": [
+        "orderNumber",
+        "userId",
+        "customerName",
+        "shippingCity",
+        "shippingAddressSummary",
+        "itemsSummary",
+        "itemCount",
+        "totalAmountInr",
+        "upiVpa",
+        "upiTxnRef",
+        "paymentMethod",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Trusted administrator membership marker document.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Admin Firebase UID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        }
+      },
+      "required": ["uid", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Catalog of fragrances and artisanal attars"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Customer profile and wishlist document"
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/UserPrivateShipping" },
+      "description": "Isolated PII subcollection for customer shipping details"
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Customer orders with UPI payment references and fulfillment status"
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Trusted administrator directory"
+    }
+  }
+}
